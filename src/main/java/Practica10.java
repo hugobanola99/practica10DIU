@@ -1,14 +1,8 @@
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.swing.DefaultListModel;
@@ -20,16 +14,17 @@ public class Practica10 extends javax.swing.JFrame {
 
     
     Tarea tarea = null;
-    JFileChooser fc = new JFileChooser();
+    JFileChooser fc;
     File carpeta;
     DefaultListModel modelo = new DefaultListModel();
-    final int BUFFER_SIZE=1024;
-    public List<String> archivos;
     File carpetaComprimida;
     String nombreCarpeta;
+    int[] vec;
+    File[] ficheros;
+    final int BUFFER_SIZE=1024;
     
     private class Tarea extends SwingWorker<Void,Void>{
-        Practica10 frame;
+        
         @Override
         protected Void doInBackground() throws Exception {
             
@@ -44,21 +39,18 @@ public class Practica10 extends javax.swing.JFrame {
                 byte[] data = new byte[BUFFER_SIZE];
                 //Iterator i = archivos.iterator();
                 
-                for(int i = 0; i < archivos.size(); i++){
+                for(int i = 0; i < vec.length; i++){
                 
-
-                    String filename = archivos.get(i);
+                    String filename = ficheros[vec[i]].getAbsolutePath();
                     FileInputStream fi = new FileInputStream(filename);
                     origin = new BufferedInputStream(fi, BUFFER_SIZE);
 
                     System.out.println("Comprimiendo "+filename);
                     Thread.sleep(1000);
                     
-
                     System.out.println(calculoBarra(i));
                     barraProgreso.setValue(calculoBarra(i));
-                    
-                    System.out.println((i/archivos.size())*100);
+                          
                     ZipEntry entry = new ZipEntry( filename );
                     out.putNextEntry( entry );
                     // Leemos datos desde el archivo origen y se envían al archivo destino
@@ -88,10 +80,10 @@ public class Practica10 extends javax.swing.JFrame {
         }
         
         private int calculoBarra(double i){
-            double size = (double) archivos.size();
+            double size = (double) vec.length;
             double c = (double) i;
-            double aux = (c/size)*100;
-            return (int) aux;
+            double res = (c/size)*100;
+            return (int) res;
         }
         
         @Override
@@ -108,12 +100,17 @@ public class Practica10 extends javax.swing.JFrame {
     
     public Practica10() {
         initComponents();
+        
         barraProgreso.setStringPainted(true);
         listaArchivos.setModel(modelo);
+        
         barraProgreso.setVisible(false);
         cancelar.setVisible(false);
         progreso.setVisible(false);
+        comprimir.setVisible(false);
+        
         nombreCarpeta = "";
+        fc = new JFileChooser();
     }
 
     
@@ -123,7 +120,6 @@ public class Practica10 extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         comenzar = new javax.swing.JButton();
-        terminar = new javax.swing.JButton();
         progreso = new javax.swing.JLabel();
         barraProgreso = new javax.swing.JProgressBar();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -134,17 +130,12 @@ public class Practica10 extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        jPanel1.setBackground(new java.awt.Color(102, 255, 204));
+
         comenzar.setText("Comenzar");
         comenzar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 comenzarActionPerformed(evt);
-            }
-        });
-
-        terminar.setText("Terminar");
-        terminar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                terminarActionPerformed(evt);
             }
         });
 
@@ -172,67 +163,60 @@ public class Practica10 extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(24, 24, 24)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(comenzar)
-                        .addGap(28, 28, 28)
-                        .addComponent(terminar))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(barraProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(cancelar))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(84, 84, 84)
+                                .addComponent(comenzar))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(65, 65, 65)
+                                .addComponent(comprimir)))
+                        .addContainerGap(97, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(barraProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(cancelar))
-                    .addComponent(progreso))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(comprimir)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(52, 52, 52)
-                        .addComponent(jLabel2)))
-                .addGap(22, 22, 22))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(progreso)
+                            .addComponent(jLabel2))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(29, 29, 29)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(25, 25, 25)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(comenzar)
-                            .addComponent(terminar)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel2)))
+                        .addComponent(comenzar)
+                        .addGap(154, 154, 154)
+                        .addComponent(comprimir))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                .addComponent(progreso)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(86, 86, 86)
-                        .addComponent(progreso)
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(cancelar)
-                            .addComponent(barraProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(26, 26, 26)
-                .addComponent(comprimir)
-                .addContainerGap(35, Short.MAX_VALUE))
+                    .addComponent(barraProgreso, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cancelar, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(34, 34, 34))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 26, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -240,46 +224,40 @@ public class Practica10 extends javax.swing.JFrame {
 
     private void comenzarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comenzarActionPerformed
         // TODO add your handling code here:
-        /*
-        tarea = new Tarea();
-        tarea.execute();
-        */
+        
         modelo.clear();
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        
         int res = fc.showOpenDialog(null);
         if(res == JFileChooser.APPROVE_OPTION){
+            
             carpeta = fc.getSelectedFile();
             carpetaComprimida=carpeta;
             nombreCarpeta = carpeta.getName();
-            File[] ficheros = carpeta.listFiles();
+            comprimir.setVisible(true);
+            
+            ficheros = carpeta.listFiles();
             for(File f : ficheros){
-                modelo.addElement(f.getAbsolutePath());
-                
-                
+                modelo.addElement(f.getName());      
             }
         }
     }//GEN-LAST:event_comenzarActionPerformed
-
-    private void terminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_terminarActionPerformed
-        // TODO add your handling code here:
-        tarea.cancel(true);
-    }//GEN-LAST:event_terminarActionPerformed
 
     private void comprimirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comprimirActionPerformed
         // TODO add your handling code here:
         int res = fc.showSaveDialog(this);
         
-        carpetaComprimida = fc.getSelectedFile();
-        System.out.println(carpetaComprimida.getAbsolutePath());
-        nombreCarpeta= JOptionPane.showInputDialog(this,"Introduce el nombre de la carpeta comprimida");
-        archivos = listaArchivos.getSelectedValuesList();
+        carpetaComprimida = fc.getSelectedFile();       
+        nombreCarpeta= JOptionPane.showInputDialog(this,"Introduce el nombre de la carpeta comprimida");       
+        vec = listaArchivos.getSelectedIndices();
+        
         barraProgreso.setVisible(true);
         barraProgreso.setValue(0);
         cancelar.setVisible(true);
         progreso.setVisible(true);
-        tarea = new Tarea();
-        tarea.execute();
         
+        tarea = new Tarea();
+        tarea.execute();    
         
     }//GEN-LAST:event_comprimirActionPerformed
 
@@ -336,6 +314,5 @@ public class Practica10 extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList<String> listaArchivos;
     private javax.swing.JLabel progreso;
-    private javax.swing.JButton terminar;
     // End of variables declaration//GEN-END:variables
 }
